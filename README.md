@@ -53,10 +53,49 @@ This assumes `hoogle-mcp` is in your PATH. You can make it available via:
 
 Alternatively, use the absolute path: `"/absolute/path/to/hoogle-mcp/result/bin/hoogle-mcp"`
 
-## MCP Tool
+## MCP Tools
 
-The server provides a single tool:
+The server provides two tools for searching Haskell documentation:
 
-- **hoogle_search**: Takes a `query` parameter and returns Hoogle search results
+### hoogle_search
+
+Simple text-based search returning human-readable results.
+
+**Parameters:**
+- `query` (string, required): Search query for functions, types, modules, or packages
+
+**Returns:** Plain text search results from Hoogle
+
+**Example queries:**
+- `"map"` - Search for the map function
+- `"[a] -> [a]"` - Search by type signature
+- `"Data.List"` - Search for a module
+
+### hoogle_docs
+
+Structured JSON documentation with full Haddock details and URLs.
+
+**Parameters:**
+- `query` (string, required): Name of function, type, module, or package
+- `count` (integer, optional): Maximum number of results to return (default: 10)
+
+**Returns:** JSON array with structured documentation including:
+- `docs`: Full documentation text (HTML format)
+- `item`: Type signature or declaration
+- `module`: Module name and URL
+- `package`: Package name and URL
+- `url`: Direct link to Haddock documentation
+- `type`: Result type (e.g., "module" for modules)
+
+**Example queries:**
+- `"fmap"` - Get documentation for a function
+- `"Data.List"` - Get module documentation and overview
+- `"Functor"` - Get typeclass documentation
+
+**Use cases:**
+- Access full Haddock documentation for symbols
+- Get URLs to browse detailed HTML documentation
+- Retrieve module and package information
+- Find documentation for types, functions, and typeclasses
 
 The server communicates via JSON-RPC over stdio following the Model Context Protocol specification.
