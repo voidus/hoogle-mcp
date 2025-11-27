@@ -1,0 +1,15 @@
+#!/usr/bin/sh
+exec ghcid \
+  -c "cabal repl \
+      --repl-options=-fobject-code \
+      --repl-options=-fno-break-on-exception \
+      --repl-options=-fno-break-on-error \
+      --repl-options=-v1 \
+      --repl-options=-ferror-spans \
+      --repl-options=-j \
+      --enable-multi-repl \
+      -f dev \
+      hoogle-mcp:tests hoogle-mcp \
+  " \
+  -T Spec.cliMain \
+

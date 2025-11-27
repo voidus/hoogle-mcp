@@ -1,0 +1,84 @@
+cabal-version: 3.0
+name: hoogle-mcp
+version: 0.1.0.0
+-- synopsis:
+-- description:
+license: AGPL-3.0-or-later
+license-file: LICENSE
+author: Simon Kohlmeyer
+maintainer: simon.kohlmeyer@gmail.com
+-- copyright:
+category: Development
+build-type: Simple
+extra-doc-files: CHANGELOG.md
+-- cabal-gild: discover src --exclude **/*.hs
+extra-source-files:
+
+flag dev
+  description: Disable some warnings for development
+  default: False
+  manual: True
+
+common common
+  build-depends: base
+  default-language: GHC2021
+  ghc-options:
+    -Wall
+    -Wno-name-shadowing
+    -Werror=missing-fields
+    -Werror=incomplete-patterns
+
+  default-extensions:
+    ApplicativeDo
+    BlockArguments
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    DerivingVia
+    DisambiguateRecordFields
+    DuplicateRecordFields
+    ImpredicativeTypes
+    LambdaCase
+    NoFieldSelectors
+    OverloadedRecordDot
+    OverloadedStrings
+    QuasiQuotes
+    RecordWildCards
+    TemplateHaskell
+    TypeFamilies
+
+  if flag(dev)
+    ghc-options:
+      -Wno-unused-imports
+
+library
+  import: common
+  hs-source-dirs: src
+  -- cabal-gild: discover src
+  exposed-modules: MyLib
+
+executable hoogle-mcp
+  import: common
+  hs-source-dirs: app
+  main-is: Main.hs
+  -- cabal-gild: discover app --exclude app/Main.hs
+  other-modules:
+  build-depends:
+    hoogle-mcp
+
+test-suite hoogle-mcp-test
+  import: common
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Main.hs
+  ghc-options: -threaded
+  -- cabal-gild: discover test --exclude test/Main.hs
+  other-modules:
+    Discover
+    Spec
+
+  build-depends:
+    ansi-terminal,
+    tasty,
+    tasty-discover,
+    hoogle-mcp
