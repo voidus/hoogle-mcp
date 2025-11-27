@@ -56,6 +56,10 @@ library
   hs-source-dirs: src
   -- cabal-gild: discover src
   exposed-modules: MyLib
+  build-depends:
+    mcp-server,
+    process,
+    text
 
 executable hoogle-mcp
   import: common
@@ -64,7 +68,10 @@ executable hoogle-mcp
   -- cabal-gild: discover app --exclude app/Main.hs
   other-modules:
   build-depends:
-    hoogle-mcp
+    hoogle-mcp,
+    mcp-server,
+    process,
+    text
 
 test-suite hoogle-mcp-test
   import: common
@@ -75,10 +82,14 @@ test-suite hoogle-mcp-test
   -- cabal-gild: discover test --exclude test/Main.hs
   other-modules:
     Discover
+    HoogleToolTest
     Spec
 
   build-depends:
     ansi-terminal,
     tasty,
     tasty-discover,
-    hoogle-mcp
+    tasty-hunit,
+    hoogle-mcp,
+    mcp-server,
+    text
