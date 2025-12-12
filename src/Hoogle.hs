@@ -1,4 +1,4 @@
-module MyLib (HoogleTool(..), handleHoogleTool) where
+module Hoogle (HoogleTool(..), handleHoogleTool) where
 
 import Data.Text (Text)
 import qualified Data.Text as T

@@ -3,7 +3,7 @@ module ToolDescriptionTest where
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.Async (race_)
 import Control.Exception (bracket, catch)
-import Data.Aeson (Value(..), decode)
+import Data.Aeson (Value(..), decode, eitherDecode)
 import Data.Aeson.KeyMap qualified as KM
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Text (Text)
@@ -11,57 +11,64 @@ import Data.Text qualified as T
 import Data.Vector qualified as V
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
 import ServerConfig (runServer)
-import System.IO (Handle, IOMode(..), hClose, hFlush, hPutStrLn, readFile, stdin, stdout, withFile)
+import System.IO (Handle, IOMode(..), hClose, hFlush, hPutStrLn, readFile, stdin, stdout, stderr, withFile)
 import System.IO.Temp (withSystemTempFile)
 import Test.Tasty
 import Test.Tasty.HUnit
 
--- | Run the MCP server main function with mocked stdin/stdout
+-- | Run the MCP server main function with mocked stdin/stdout/stderr
 runServerWithInput :: String -> IO String
 runServerWithInput input = do
-  -- Create temp files for stdin/stdout
+  -- Create temp files for stdin/stdout/stderr
   withSystemTempFile "stdin.txt" $ \stdinPath stdinHandle -> do
     withSystemTempFile "stdout.txt" $ \stdoutPath stdoutHandle -> do
-      -- Write input to temp stdin and close it
-      hPutStrLn stdinHandle input
-      hFlush stdinHandle
-      hClose stdinHandle
+      withSystemTempFile "stderr.txt" $ \stderrPath stderrHandle -> do
+        -- Write input to temp stdin and close it
+        hPutStrLn stdinHandle input
+        hFlush stdinHandle
+        hClose stdinHandle
 
-      -- Close the stdout handle so we can open it later
-      hClose stdoutHandle
+        -- Close the stdout and stderr handles so we can open them later
+        hClose stdoutHandle
+        hClose stderrHandle
 
-      -- Open the temp file for reading as stdin
-      withFile stdinPath ReadMode $ \newStdin -> do
-        withFile stdoutPath WriteMode $ \newStdout -> do
-          -- Save original stdin/stdout
-          bracket
-            ( do
-                oldStdin <- hDuplicate stdin
-                oldStdout <- hDuplicate stdout
-                return (oldStdin, oldStdout)
-            )
-            ( \(oldStdin, oldStdout) -> do
-                -- Restore original stdin/stdout
-                hDuplicateTo oldStdin stdin
-                hDuplicateTo oldStdout stdout
-                hClose oldStdin
-                hClose oldStdout
-            )
-            ( \_ -> do
-                -- Redirect stdin/stdout
-                hDuplicateTo newStdin stdin
-                hDuplicateTo newStdout stdout
+        -- Open the temp files
+        withFile stdinPath ReadMode $ \newStdin -> do
+          withFile stdoutPath WriteMode $ \newStdout -> do
+            withFile stderrPath WriteMode $ \newStderr -> do
+              -- Save original stdin/stdout/stderr
+              bracket
+                ( do
+                    oldStdin <- hDuplicate stdin
+                    oldStdout <- hDuplicate stdout
+                    oldStderr <- hDuplicate stderr
+                    return (oldStdin, oldStdout, oldStderr)
+                )
+                ( \(oldStdin, oldStdout, oldStderr) -> do
+                    -- Restore original stdin/stdout/stderr
+                    hDuplicateTo oldStdin stdin
+                    hDuplicateTo oldStdout stdout
+                    hDuplicateTo oldStderr stderr
+                    hClose oldStdin
+                    hClose oldStdout
+                    hClose oldStderr
+                )
+                ( \_ -> do
+                    -- Redirect stdin/stdout/stderr
+                    hDuplicateTo newStdin stdin
+                    hDuplicateTo newStdout stdout
+                    hDuplicateTo newStderr stderr
 
-                -- Run server in async, with timeout
-                _ <- race_
-                  (runServer `catch` (\(_ :: IOError) -> return ()))
-                  (threadDelay 2000000) -- 2 second timeout
+                    -- Run server in async, with timeout
+                    _ <- race_
+                      (runServer `catch` (\(_ :: IOError) -> return ()))
+                      (threadDelay 2000000) -- 2 second timeout
 
-                return ()
-            )
+                    return ()
+                )
 
-      -- Read output from temp file
-      readFile stdoutPath
+        -- Read output from temp file (stdout only, clean JSON)
+        readFile stdoutPath
 
 -- | Test that the MCP tools/list response contains proper descriptions
 test_toolDescriptionsIncludeUsageGuidance :: TestTree
@@ -69,15 +76,12 @@ test_toolDescriptionsIncludeUsageGuidance = testCase "tools/list includes compre
   -- Send a tools/list request to the MCP server
   output <- runServerWithInput "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}"
 
-  -- Extract the JSON response line (filter out debug/error lines)
-  let jsonLines = filter ("{\"id\":" `T.isPrefixOf`) $ T.lines $ T.pack output
-  case jsonLines of
-    [] -> assertFailure $ "No JSON response found in output: " ++ output
-    (jsonLine:_) -> do
-      let maybeResponse = decode @Value (BL8.pack $ T.unpack jsonLine)
-      case maybeResponse of
-        Nothing -> assertFailure "Failed to parse JSON response"
-        Just response -> do
+  -- Parse the JSON response (extract from first '{' to last '}')
+  let jsonStart = dropWhile (/= '{') output
+      jsonOnly = reverse $ dropWhile (/= '}') $ reverse jsonStart
+  case eitherDecode @Value (BL8.pack jsonOnly) of
+    Left err -> assertFailure $ "Failed to parse JSON: " ++ err ++ "\nOutput: " ++ output
+    Right response -> do
           -- Navigate to tools array
           let tools = extractTools response
 
@@ -120,14 +124,12 @@ test_hoogleDocsHasDescription :: TestTree
 test_hoogleDocsHasDescription = testCase "hoogle_docs tool has description" $ do
   output <- runServerWithInput "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}"
 
-  let jsonLines = filter ("{\"id\":" `T.isPrefixOf`) $ T.lines $ T.pack output
-  case jsonLines of
-    [] -> assertFailure $ "No JSON response found in output: " ++ output
-    (jsonLine:_) -> do
-      let maybeResponse = decode @Value (BL8.pack $ T.unpack jsonLine)
-      case maybeResponse of
-        Nothing -> assertFailure "Failed to parse JSON response"
-        Just response -> do
+  -- Parse the JSON response (extract from first '{' to last '}')
+  let jsonStart = dropWhile (/= '{') output
+      jsonOnly = reverse $ dropWhile (/= '}') $ reverse jsonStart
+  case eitherDecode @Value (BL8.pack jsonOnly) of
+    Left err -> assertFailure $ "Failed to parse JSON: " ++ err ++ "\nOutput: " ++ output
+    Right response -> do
           let tools = extractTools response
           case findTool "hoogle_docs" tools of
             Nothing -> assertFailure "hoogle_docs tool not found"

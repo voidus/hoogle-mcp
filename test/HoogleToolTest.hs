@@ -3,7 +3,7 @@ module HoogleToolTest where
 import Data.Text (Text)
 import qualified Data.Text as T
 import MCP.Server (Content(..))
-import MyLib (HoogleTool(..), handleHoogleTool)
+import Hoogle (HoogleTool(..), handleHoogleTool)
 import Test.Tasty
 import Test.Tasty.HUnit
 

@@ -2,7 +2,7 @@ module ServerConfig (serverInfo, handlers, runServer) where
 
 import MCP.Server
 import MCP.Server.Derive
-import MyLib (HoogleTool(..), handleHoogleTool)
+import Hoogle (HoogleTool(..), handleHoogleTool)
 
 serverInfo :: McpServerInfo
 serverInfo = McpServerInfo
