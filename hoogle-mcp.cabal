@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: hoogle-mcp
-version: 0.1.0.0
+version: 0.1.1.0
 -- synopsis:
 -- description:
 license: AGPL-3.0-or-later
@@ -58,10 +58,11 @@ library
   exposed-modules:
     MyLib
     ServerConfig
+
   build-depends:
     mcp-server,
     process,
-    text
+    text,
 
 executable hoogle-mcp
   import: common
@@ -74,7 +75,7 @@ executable hoogle-mcp
     mcp-server,
     optparse-applicative,
     process,
-    text
+    text,
 
 test-suite hoogle-mcp-test
   import: common
@@ -94,12 +95,12 @@ test-suite hoogle-mcp-test
     ansi-terminal,
     async,
     bytestring,
+    hoogle-mcp,
+    mcp-server,
     process,
     tasty,
     tasty-discover,
     tasty-hunit,
     temporary,
-    hoogle-mcp,
-    mcp-server,
     text,
-    vector
+    vector,
