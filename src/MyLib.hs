@@ -5,14 +5,33 @@ import qualified Data.Text as T
 import MCP.Server (Content(..))
 import System.Process (readProcess)
 
--- Define the Hoogle search tool
+-- | Hoogle search tools for querying Haskell documentation.
+--
+-- Hoogle supports several query types:
+--
+-- 1. NAME SEARCH: Search for a function, type, or module by name
+--    Examples: \"map\", \"foldr\", \"Maybe\", \"Data.List\"
+--
+-- 2. TYPE SEARCH: Search by type signature using Haskell syntax
+--    Examples: \"(a -> b) -> [a] -> [b]\", \"a -> Maybe a\", \"Int -> String\"
+--
+-- 3. PACKAGE-QUALIFIED SEARCH: Limit search to a specific package using \"+package\"
+--    Examples: \"+base map\", \"+text concat\", \"+optparse-applicative many\"
+--
+-- IMPORTANT BEST PRACTICES:
+-- - Make ONE focused query at a time
+-- - Do NOT combine multiple unrelated terms in a single query
+-- - BAD: \"optparse-applicative many some argument\" (too many terms)
+-- - GOOD: \"+optparse-applicative many\" then \"+optparse-applicative some\" (separate queries)
+-- - For type searches, use proper Haskell type syntax with arrows and parentheses
+-- - Use package qualification when you know which package you're looking for
 data HoogleTool
   = HoogleSearch
-      { query :: Text
+      { query :: Text  -- ^ A single focused Hoogle query (name, type signature, or package-qualified search). Keep it simple and focused.
       }
   | HoogleDocs
-      { query :: Text
-      , count :: Maybe Int
+      { query :: Text  -- ^ A single focused Hoogle query (name, type signature, or package-qualified search). Keep it simple and focused.
+      , count :: Maybe Int  -- ^ Maximum number of results to return (default: 10)
       }
   deriving (Show)
 

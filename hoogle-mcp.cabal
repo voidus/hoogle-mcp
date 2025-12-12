@@ -55,7 +55,9 @@ library
   import: common
   hs-source-dirs: src
   -- cabal-gild: discover src
-  exposed-modules: MyLib
+  exposed-modules:
+    MyLib
+    ServerConfig
   build-depends:
     mcp-server,
     process,
@@ -85,12 +87,19 @@ test-suite hoogle-mcp-test
     Discover
     HoogleToolTest
     Spec
+    ToolDescriptionTest
 
   build-depends:
+    aeson,
     ansi-terminal,
+    async,
+    bytestring,
+    process,
     tasty,
     tasty-discover,
     tasty-hunit,
+    temporary,
     hoogle-mcp,
     mcp-server,
-    text
+    text,
+    vector

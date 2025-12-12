@@ -1,11 +1,9 @@
 module Main where
 
-import MCP.Server
-import MCP.Server.Derive
-import MyLib (HoogleTool(..), handleHoogleTool)
 import Options.Applicative
 import Data.Version (showVersion)
 import Paths_hoogle_mcp (version)
+import ServerConfig (runServer)
 
 data Command
   = RunServer
@@ -32,15 +30,4 @@ main = do
   cmd <- execParser opts
   case cmd of
     ShowVersion -> putStrLn $ "hoogle-mcp version " ++ showVersion version
-    RunServer -> runMcpServerStdio serverInfo handlers
-  where
-    serverInfo = McpServerInfo
-      { serverName = "hoogle-mcp"
-      , serverVersion = "0.1.0"
-      , serverInstructions = "Hoogle search server for Haskell documentation"
-      }
-    handlers = McpServerHandlers
-      { tools = Just $(deriveToolHandler ''HoogleTool 'handleHoogleTool)
-      , prompts = Nothing
-      , resources = Nothing
-      }
+    RunServer -> runServer
