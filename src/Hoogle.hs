@@ -15,17 +15,22 @@ import System.Process (readProcess)
 -- - Look up a function's type: just use the function name (\"foldl\", \"traverse\")
 -- - Find functions by type: use type signatures (\"[a] -> Int\", \"Maybe a -> a\")
 -- - Find similar functions: search by partial type (\"a -> Maybe b\")
+-- - Look up module-qualified names: \"Relude.lookup\", \"Data.List.intercalate\"
 --
--- Hoogle supports three query types:
+-- Hoogle supports four query types:
 --
 -- 1. NAME SEARCH: Search for a function, type, or module by name
 --    Examples: \"map\", \"foldr\", \"Maybe\", \"Data.List\", \"parseJSON\"
 --    Use this to look up a specific function's type signature and documentation
 --
--- 2. TYPE SEARCH: Search by type signature using Haskell syntax
+-- 2. MODULE-QUALIFIED: Search for a specific function in a module
+--    Examples: \"Relude.lookup\", \"Data.List.intercalate\", \"Control.Monad.forever\"
+--    Use this when you know the module and want that specific version
+--
+-- 3. TYPE SEARCH: Search by type signature using Haskell syntax
 --    Examples: \"(a -> b) -> [a] -> [b]\", \"Text -> ByteString\", \"FilePath -> IO String\"
 --
--- 3. PACKAGE-QUALIFIED SEARCH: Limit search to a specific package using \"+package\"
+-- 4. PACKAGE-QUALIFIED SEARCH: Limit search to a specific package using \"+package\"
 --    Examples: \"+base map\", \"+text concat\", \"+aeson parseJSON\"
 --
 -- IMPORTANT BEST PRACTICES:
