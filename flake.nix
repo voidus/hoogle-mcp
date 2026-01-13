@@ -37,6 +37,12 @@
           });
         in
         pkgs: final: prev: {
+          mcp-server = final.callCabal2nix "mcp-server" (pkgs.fetchFromGitHub {
+            owner = "voidus";
+            repo = "haskell-mcp-server";
+            rev = "protocol-version-negotiation";
+            sha256 = "sha256-ylEyBZwymXbRjk15WRrfVgVZjr3h0L72bK9Koq7gXZU=";
+          }) { };
           # rel8 = dontCheck prev.rel8;
           # hs-opentelemetry-propagator-datadog = unmarkBroken prev.hs-opentelemetry-propagator-datadog;
           # migrant-postgresql-simple = dontCheck (
