@@ -10,7 +10,6 @@ maintainer: simon.kohlmeyer@gmail.com
 -- copyright:
 category: Development
 build-type: Simple
-extra-doc-files: CHANGELOG.md
 -- cabal-gild: discover src --exclude **/*.hs
 extra-source-files:
 
