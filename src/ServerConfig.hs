@@ -2,7 +2,7 @@ module ServerConfig (serverInfo, handlers, runServer) where
 
 import MCP.Server
 import MCP.Server.Derive
-import Hoogle (HoogleTool(..), handleHoogleTool)
+import Hoogle (HoogleTool(..), handleHoogleToolWithContext)
 
 serverInfo :: McpServerInfo
 serverInfo = McpServerInfo
@@ -11,9 +11,9 @@ serverInfo = McpServerInfo
   , serverInstructions = "Hoogle search server for Haskell documentation"
   }
 
-handlers :: McpServerHandlers IO
-handlers = McpServerHandlers
-  { tools = Just $(deriveToolHandlerWithDescription ''HoogleTool 'handleHoogleTool
+handlers :: McpServerHandlers
+handlers = noHandlers
+  { tools = Just $(deriveToolHandlerWithDescription ''HoogleTool 'handleHoogleToolWithContext
       [ ("HoogleSearch", unlines
           [ "Search Haskell documentation using Hoogle."
           , ""
@@ -73,8 +73,6 @@ handlers = McpServerHandlers
           , "Make ONE focused query at a time - do not combine multiple unrelated terms."
           ])
       ])
-  , prompts = Nothing
-  , resources = Nothing
   }
 
 -- | Run the MCP server with stdio transport
