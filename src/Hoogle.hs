@@ -1,8 +1,8 @@
-module Hoogle (HoogleTool(..), handleHoogleTool) where
+module Hoogle (HoogleTool(..), handleHoogleTool, handleHoogleToolWithContext) where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import MCP.Server (Content(..))
+import MCP.Server (ClientContext, Content(..))
 import System.Process (readProcess)
 
 -- | Hoogle search tools for querying Haskell documentation.
@@ -65,3 +65,6 @@ handleHoogleTool (HoogleDocs q maybeCount) = do
       args = ["search", "--json"] ++ countArg ++ ["--", T.unpack q]
   result <- readProcess "hoogle" args ""
   pure $ ContentText $ T.pack result
+
+handleHoogleToolWithContext :: ClientContext -> HoogleTool -> IO Content
+handleHoogleToolWithContext _ = handleHoogleTool

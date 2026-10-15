@@ -60,7 +60,7 @@ library
     ServerConfig
 
   build-depends:
-    mcp-server,
+    mcp-server >=0.2.0.2 && <0.3,
     process,
     text,
 

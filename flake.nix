@@ -37,11 +37,17 @@
           });
         in
         pkgs: final: prev: {
+          # mcp-server needs the hOrigin re-export from http-types 0.12.5.
+          http-types = final.callHackageDirect {
+            pkg = "http-types";
+            ver = "0.12.6";
+            sha256 = "sha256-bGrVUTZnP1NFVwR0apgNLolKPW3cJdVW4jSBSlV7srg=";
+          } { };
           mcp-server = final.callCabal2nix "mcp-server" (pkgs.fetchFromGitHub {
-            owner = "voidus";
+            owner = "drshade";
             repo = "haskell-mcp-server";
-            rev = "protocol-version-negotiation";
-            sha256 = "sha256-ylEyBZwymXbRjk15WRrfVgVZjr3h0L72bK9Koq7gXZU=";
+            rev = "1e68a110cd4a97753dd89aa36d4874f08847610f"; # v0.2.0.2
+            sha256 = "sha256-9Z7emvRKNj6czq+XbYnBcaDn0iUiQ9lvaSOUIWsMAw4=";
           }) { };
           # rel8 = dontCheck prev.rel8;
           # hs-opentelemetry-propagator-datadog = unmarkBroken prev.hs-opentelemetry-propagator-datadog;
